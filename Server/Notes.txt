@@ -1,0 +1,5 @@
+- for flask commands run with:
+
+	python -m flask run
+- to kill a process on an adress use: 
+	 fuser -k 5000/tcp
