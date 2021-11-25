@@ -1,7 +1,9 @@
 import os
 from flask import Flask
 
+
 def create_app(test_config=None):
+    print("Setting up App")
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -32,4 +34,18 @@ def create_app(test_config=None):
     # register the authorisation 
     from . import auth
     app.register_blueprint(auth.bp)
+    from . import params
+    app.register_blueprint(params.bp)
+    from . import showdata
+    app.register_blueprint(showdata.bp)
+    app.add_url_rule('/', endpoint = 'index')
     return app
+
+
+#if __name__ == "__main__":
+#    ## code here for:
+#    ## function to upload data from environmental sensors
+#    ## use
+#    create_app()
+#    app.run(debug=True)
+#    print("Running")

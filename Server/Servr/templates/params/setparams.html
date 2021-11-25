@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Set Parameters{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="Temperature">Temperature (°C) </label>
+    <input name="Temperature" id="Temperature" required>
+    <label for="Carbon Dioxide">Carbon Dioxide (%)</label>
+    <input name="Carbon Dioxide" id="Carbon Dioxide" required>
+    <label for="Humidity">Relative Humidity (%)</label>
+    <input name="Humidity" id="Humidity" required>
+    <input type="submit" value="Submit Changes">
+  </form>
+{% endblock %}

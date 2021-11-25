@@ -15,3 +15,10 @@ CREATE TABLE post (
   body TEXT NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id)
 );
+
+CREATE Table params (
+	temperature FLOAT, 
+	rh INTEGER, 
+	co2 INTEGER
+);
+	

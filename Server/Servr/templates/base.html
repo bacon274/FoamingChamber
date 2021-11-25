@@ -1,8 +1,8 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - Flaskr</title>
+<title>{% block title %}{% endblock %} - Foaming Chamber </title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
-  <h1>Flaskr</h1>
+  <h1>Foaming Chamber</h1>
   <ul>
     {% if g.user %}
       <li><span>{{ g.user['username'] }}</span>
@@ -10,7 +10,10 @@
     {% else %}
       <li><a href="{{ url_for('auth.register') }}">Register</a>
       <li><a href="{{ url_for('auth.login') }}">Log In</a>
+      
     {% endif %}
+      <li><a href="{{ url_for('params.setparams') }}">Set</a>
+      <li><a href="{{ url_for('showdata.index') }}">Data</a>
   </ul>
 </nav>
 <section class="content">
