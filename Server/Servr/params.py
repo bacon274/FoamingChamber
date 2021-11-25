@@ -22,10 +22,13 @@ def setparams():
         
         if float(co2)>15:
             error = 'CO2 limit exceeded (15%)'
-        elif float(temp)>30:
+            flash(error)
+        if float(temp)>30:
             error = 'Temperature limit exceeded (30C)'
-        elif float(rh)>90:
+            flash(error)
+        if float(rh)>90:
             error = 'Relative Humidity limit exceeded (30C)'
+            flash(error)
         if error == None:
             try:
                 db.execute("DELETE FROM params;")
@@ -37,11 +40,11 @@ def setparams():
                 db.commit()
             except db.IntegrityError:
                 error = "User {username} is already registered."
+                flash(error)
             else:
-                return redirect(url_for("auth.login"))
+                return redirect(url_for("showdata.index"))
             
-        if error != None:
-            flash(error)
+    
         
     return render_template('params/setparams.html')
 
