@@ -3,3 +3,5 @@
 	python -m flask run
 - to kill a process on an adress use: 
 	 fuser -k 5000/tcp
+- app must be Servr to use 
+	python -m flask init-db

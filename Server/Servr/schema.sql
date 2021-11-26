@@ -22,3 +22,17 @@ CREATE Table params (
 	co2 INTEGER
 );
 	
+CREATE Table envdata (
+	datetime TEXT, 
+	temperature FLOAT, 
+	rh Float, 
+	co2 Float, 
+	o2 Float, 
+	airspeed Float
+);
+
+CREATE Table relaystates (
+	temperature BOOL,
+	rh BOOL,
+	co2 BOOL, 
+	uv BOOL);
