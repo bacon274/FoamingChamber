@@ -18,12 +18,12 @@
   <h1> Graph Data </h2>
   
   <canvas id="myChart" width="400" height="400"></canvas>  
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
   <script>
 	  
 	var ctx = document.getElementById("myChart").getContext("2d");
 
-	var datetime = {{datetime}};
+	var datetime = {{datetime | safe}};
 	var rh = {{rh}};
 	var o2 = {{o2}};
 	var co2 = {{co2}};
@@ -36,57 +36,55 @@
 			
 			{
 				label: "Relative Humidity (%)",
-				fillColor: "rgba(220,220,220,0.2)",
-				strokeColor: "rgba(220,220,220,1)",
-				pointColor: "rgba(220,220,220,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(220,220,220,1)",
+				fill:false,
+				backgroundColor:"#a8d9f7",
+				borderColor: "#3e95cd",
 				data: rh
 			    },
 			{
 				label: "Oxygen Concentration (%)",
-				fillColor: "rgba(151,187,205,0.2)",
-				strokeColor: "rgba(151,187,205,1)",
-				pointColor: "rgba(151,187,205,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(151,187,205,1)",
+				fill:false,
+				borderColor: "#f6ab3d",
+				backgroundColor: "#f3edb3",
 				data: o2
 			    },
 			{
 				label: "Carbon Dioxide Concentration (%)",
-				fillColor: "rgba(151,187,205,0.2)",
-				strokeColor: "rgba(151,187,205,1)",
-				pointColor: "rgba(151,187,205,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(151,187,205,1)",
+				fill:false,
+				borderColor: "#014d3f",
+				backgroundColor:"#a1cc8a",
 				data: co2
 			    },
 			{
 				label: "Airspeed (ms-1)",
-				fillColor: "rgba(151,187,205,0.2)",
-				strokeColor: "rgba(151,187,205,1)",
-				pointColor: "rgba(151,187,205,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(151,187,205,1)",
+				fill:false,
+				borderColor: "#c7cccf",
 				data: airspeed
 			    },
 			{
 				label: "Temperature (C)",
-				fillColor: "rgba(151,187,205,0.2)",
-				strokeColor: "rgba(151,187,205,1)",
-				pointColor: "rgba(151,187,205,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(151,187,205,1)",
+				fill:false,
+				borderColor: "#ff3f00",
+				backgroundColor:"#e37124",
 				data: temperature
 			    }
 			]
 		    };
-		var myLineChart = new Chart(ctx).Line(data);
+	var options = {
+	  title:{
+	    display:true,
+	    text:'Enviromental Sensor Data'
+	  },
+	  hover:{
+	    mode:'index',
+	    intersect:true
+	  },
+	};
+	
+	/*var myLineChart = new Chart(ctx).Line(data=data, options=options); */
+	var myLineChart = new Chart(ctx, {type: 'line', data:data, options:options}); 
+		
+		
   </script>
   
 {% endblock %}
