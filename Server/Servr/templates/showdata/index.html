@@ -5,20 +5,35 @@
 {% endblock %}
 
 {% block content %}
+  <div>
   {% for params in currentparams %}
 	<h1> Current Set Parameters: </h2>
   	<h2> Temperature = {{params['temperature']}} °C </h2>
   	<h2> Rh = {{params['rh']}} % </h2>
 	<h2> CO2 = {{params['co2']}} % </h2>
 {% endfor %}
-  <h1> Current Readings: </h2>
-  <h2> Temperature = n/a °C </h2>
-  <h2> Rh = n/a % </h2>
-  <h2> CO2 = n/a % </h2>
+  </div>
+  <div>
+    <h1> Current Readings: </h2>
+    <h2> Temperature = {{temperature[-1]}} °C </h2>
+    <h2> Rh = {{rh[-1]}} % </h2>
+    <h2> CO2 = {{co2[-1]}} %</h2>
+    <h2> Airspeed = {{airspeed[-1]}} mph </h2>
+    <h2> O2 = {{o2[-1]}} %</h2>
+  </div>
   <h1> Graph Data </h2>
-  
+  <form method="post">
+    <label for="start">Start date:</label>
+    <input type="date" id="start" name="date-start"
+       value={{start}}>
+    <label for="start">End date:</label>
+    <input type="date" id="end" name="date-end"
+       value={{end}} >
+       <input type="submit">
+  </form>
   <canvas id="myChart" width="400" height="400"></canvas>  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
+
   <script>
 	  
 	var ctx = document.getElementById("myChart").getContext("2d");
@@ -75,9 +90,26 @@
 	    display:true,
 	    text:'Enviromental Sensor Data'
 	  },
-	  hover:{
-	    mode:'index',
-	    intersect:true
+	  scales:{
+	    xAxes: [
+	      {
+		type: "time",
+		time:{
+		  format:"%YYYY-%MM-%DD %hh:%mm:%ss"
+		},
+		
+		scaleLabel: {
+		  display: true, 
+		  labelString: "Time"
+		},
+		position: "bottom"
+	      }
+	    ], 
+	  yAxes: [
+	      {ticks:{
+		 beginAtZero:true}
+		}
+	      ]
 	  },
 	};
 	

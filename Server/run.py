@@ -5,6 +5,8 @@ import time
 from datetime import datetime
 from dateutil import tz
 from tzlocal import get_localzone
+import serial
+import json
 # import relay module
 
 app = create_app()
@@ -28,7 +30,31 @@ def update_relay(relaydict):
 
 def get_sensor_values():
     ## some code here for serial read
-    sensors_dict = {'actionable':{'temperature': 23, 'co2' : 5, 'rh' : 40}, 'other':{ 'airspeed': 5,'o2':18}}
+    try:
+        ser = serial.Serial('/dev/ttyACM1', 9600)
+    except serial.SerialException:
+        try:
+            ser = serial.Serial('/dev/ttyACM0', 9600)
+        except Exception as e:
+            print(e)
+       
+    ser.reset_input_buffer()
+    try:
+        ser.write(b"GO\n")
+        #ser.write("GO")
+        time.sleep(1)
+        line = ser.readline().decode('utf-8').rstrip()
+        
+        if line == "GO" :
+            data = ser.readline().decode('utf-8').rstrip()
+            sensors_dict = json.loads(data)
+        else:
+            sensors_dict = {}
+            
+    except Exception as e:
+        print(e)
+        sensors_dict = {}
+       # sensors_dict = {'actionable':{'temperature': 0, 'co2' : 0, 'rh' : 0}, 'other':{ 'airspeed': 0,'o2':0}}
     return sensors_dict
 
 def get_targets():
@@ -76,9 +102,9 @@ def save_loop():
                 db.execute(
                     'INSERT INTO envdata (datetime, temperature, rh, co2, o2, airspeed) VALUES (?,?,?,?,?,?)', (datetimestr, temperature, rh, co2, o2,airspeed ))
                 db.commit()
-        except:
-            print('Error Saving')
-        time.sleep(5)
+        except Exception as e:
+            print('Error Saving', e)
+        time.sleep(600)
         
 def get_histdata():
         try:
@@ -104,11 +130,11 @@ if __name__ == 'run':
 #    wipe_histdata()
 #    save_histdata()
     
-    get_histdata()
+#    get_histdata()
 #    p = Process(target= repeat_loop)
 #    p.daemon = True
 #    p.start()
-#    savedataprocess = Process(target=save_loop)
-#    savedataprocess.daemon = True
-#    savedataprocess.start()
+    savedataprocess = Process(target=save_loop)
+    savedataprocess.daemon = True
+    savedataprocess.start()
     
