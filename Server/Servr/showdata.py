@@ -19,7 +19,7 @@ def index():
     if request.method == 'POST':
         start = request.form['date-start']
         end = request.form['date-end']
-        querystr = "SELECT * FROM envdata WHERE [datetime] >= date('{}') AND [datetime] <= date('{}') ORDER BY [datetime] ASC ;" .format(start,end) # AND [datetime] <= date({})
+        querystr = "SELECT * FROM envdata WHERE [datetime] >= date('{}') AND [datetime] <= date('{}','+1 day') ORDER BY [datetime] ASC ;" .format(start,end) # AND [datetime] <= date({})
        
         
     else:
@@ -32,14 +32,14 @@ def index():
     db = get_db()
     currentparams = db.execute(
         'SELECT temperature, rh, co2 FROM params;').fetchall()
-    print(querystr)
+#    print(querystr)
     df = pd.read_sql_query(querystr, db)
     
    # df2 = pd.read_sql('select CONVERT(datetime, CHAR(10)) as datetime from envdata', db, parse_dates={'datetime': "%Y-%m-%d %H:%M:%S"})
     datetime = df['datetime'].str.normalize('NFKD').str.encode('ASCII').values.tolist() # x axis
     #datetime = ['2021-11-26 16:36:37', '2021-11-26 16:36:42',' 2021-11-26 16:36:47', '2021-11-26 16:36:52','2021-11-26 16:36:57']
 #    print (type(datetime), datetime)
-    print (type(datetime[-1]), datetime[-1])
+#    print (type(datetime[-1]), datetime[-1])
     
     rh = df['rh'].values.tolist()
     temperature = df['temperature'].values.tolist()
