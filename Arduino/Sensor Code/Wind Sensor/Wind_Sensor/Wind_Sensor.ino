@@ -33,8 +33,8 @@ When using an Arduino to power the sensor, an external power supply is better. M
  */
 
 
-#define analogPinForRV    3   // change to pins you the analog pins are using
-#define analogPinForTMP   2
+#define analogPinForRV    A3   // change to pins you the analog pins are using
+#define analogPinForTMP   A2
 
 // to calibrate your sensor, put a glass over it, but the sensor should not be
 // touching the desktop surface however.

@@ -57,14 +57,14 @@ void loop(){
         float temp_hum_val[2] = {0};
         StaticJsonDocument <200> doc;
         if (!dht.readTempAndHumidity(temp_hum_val)) {
-          doc["o2"] = readO2Concentration();
-          doc["rh"] = temp_hum_val[0];
-          doc["temperature"] = temp_hum_val[1];
-          doc["airspeed"] = readAirSpeed();
-          doc["co2"] = readCo2Concentration();
+          doc["other"]["o2"] = readO2Concentration();
+          doc["actionable"]["rh"] = temp_hum_val[0];
+          doc["actionable"]["temperature"] = temp_hum_val[1];
+          doc["other"]["airspeed"] = readAirSpeed();
+          doc["actionable"]["co2"] = readCo2Concentration();
           serializeJson(doc,Serial);
           Serial.println();
-          delay(500);
+         
         } else {
             Serial.println("Failed to get sensor values.");
         }
@@ -72,6 +72,7 @@ void loop(){
       }
       
   }
+  delay(1);
     
     
 }
