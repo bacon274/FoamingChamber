@@ -6,11 +6,17 @@
 #include <DHT.h>
 #include <ArduinoJson.h>
 #include <LiquidCrystal_I2C.h>
+#include "SHT31.h"
+#include <Arduino.h>
 
 // Define Humidity sensor parameters
 #define DHTTYPE DHT11   // DHT 11
 #define DHTPIN 2     // what pin we're connected to（DHT10 and DHT20 don't need define it）
 DHT dht(DHTPIN, DHTTYPE);
+
+// New Rh
+
+SHT31 sht31 = SHT31();
 
 // O2 Sensor parameters
 const float VRefer = 3.3;       // voltage of adc reference
@@ -48,9 +54,11 @@ void setup() {
 //    Serial.println("DHTxx test!");
     Wire.begin(); // initialise  i2c
     dht.begin();
+    sht31.begin();
     lcd.init();  //initialize the lcd
     lcd.backlight();  //open the backlight
     lcd.setCursor(1,0);
+    
     lcd.print("Starting up...");
     
 }
@@ -61,27 +69,25 @@ void loop(){
       String data = Serial.readStringUntil('\n');
       Serial.println(data);
       if (data=="GO"){
-        float temp_hum_val[2] = {0};
         StaticJsonDocument <200> doc;
-        if (!dht.readTempAndHumidity(temp_hum_val)) {
-          doc["other"]["o2"] = readO2Concentration();
-          doc["actionable"]["rh"] = temp_hum_val[0];
-          doc["actionable"]["temperature"] = temp_hum_val[1];
-          doc["other"]["airspeed"] = readAirSpeed();
-          doc["actionable"]["co2"] = readCo2Concentration();
-          serializeJson(doc,Serial);
-          Serial.println();
+        doc["other"]["o2"] = readO2Concentration();
+        doc["actionable"]["rh"] =sht31.getHumidity();
+        doc["actionable"]["temperature"] = sht31.getTemperature();
+        doc["other"]["airspeed"] = readAirSpeed();
+        doc["actionable"]["co2"] = readCo2Concentration();
+        serializeJson(doc,Serial);
+        Serial.println();
 
-          String lcdString =  "T: " + String(float(doc["actionable"]["temperature"]),1) + "C" 
-          + " RH:"+ String(float(doc["actionable"]["rh"]),0)+ "%";
-         
-          String lcdString2 = "CO2:" + String(float(doc["actionable"]["co2"]),1)+"%" 
-          + " O2:" + String(float(doc["other"]["o2"]),0) + "%"; 
-          lcd.clear();
-          lcd.setCursor(0,0);
-          lcd.print(lcdString);
-          lcd.setCursor(0,1);
-          lcd.print(lcdString2);
+        String lcdString =  "T: " + String(float(doc["actionable"]["temperature"]),1) + "C" 
+        + " RH:"+ String(float(doc["actionable"]["rh"]),0)+ "%";
+       
+        String lcdString2 = "CO2:" + String(float(doc["actionable"]["co2"]),1)+"%" 
+        + " O2:" + String(float(doc["other"]["o2"]),0) + "%"; 
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print(lcdString);
+        lcd.setCursor(0,1);
+        lcd.print(lcdString2);
           
          
         } else {
@@ -93,8 +99,7 @@ void loop(){
       
 
       
-  }
-  delay(1);
+   delay(1);
     
     
 }
