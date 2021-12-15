@@ -10,6 +10,7 @@ import serial
 import json
 import RPi.GPIO as GPIO
 import threading
+import schedule
 # import relay module
 
 app = create_app()
@@ -37,20 +38,25 @@ def relay_setup():
     Relay_Ch7 = 21
     Relay_Ch8 = 26
     
+    
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
 
     GPIO.setup(Relay_Ch1,GPIO.OUT)
     GPIO.setup(Relay_Ch2,GPIO.OUT)
     GPIO.setup(Relay_Ch3,GPIO.OUT)
-    GPIO.setup(Relay_Ch4,GPIO.OUT)
+    
+    # Preset the relay as off
+    GPIO.output(Relay_Ch1,GPIO.HIGH)
+    GPIO.output(Relay_Ch2,GPIO.HIGH)
+    GPIO.output(Relay_Ch3,GPIO.HIGH)
     
 #    GPIO.output(Relay_Ch2,GPIO.HIGH)
 #    GPIO.output(Relay_Ch3,GPIO.HIGH)
 #    GPIO.output(Relay_Ch4,GPIO.HIGH)
 #    GPIO.output(Relay_Ch1,GPIO.HIGH)
     
-    relay_dict = {'temperature': {'ch': Relay_Ch1,'state':  False}, 'co2' : {'ch': Relay_Ch2,'state':  False}, 'rh' :  {'ch': Relay_Ch3,'state':  False}, 'uv':  {'ch': Relay_Ch4,'state':  False}}
+    relay_dict = {'temperature': {'ch': Relay_Ch1,'state':  False}, 'co2' : {'ch': Relay_Ch2,'state':  False}, 'rh' :  {'ch': Relay_Ch3,'state':  False}}
 #    update_relay()
     print("Setup The Relay Module is [success]")
   
@@ -70,6 +76,20 @@ def update_relay():
                 GPIO.cleanup()
     
     print("Updating Relay: ", relay_dict)
+    try:
+        with app.app_context():
+            db = get_db()
+            db.execute("DELETE FROM relaystates;")
+            db.commit()
+            db.execute(
+                "INSERT INTO relaystates (temperature, rh, co2) VALUES (?, ?, ?)",
+                (relay_dict['temperature']['state'], relay_dict['rh']['state'], relay_dict['co2']['state']),
+            )
+            db.commit()
+            print("relay table updated")
+            
+    except:
+        print("couldnt update relay database")
     
 def compare_values(actualdict, targetdict):
 #        print("check:",actualdict, targetdict)
@@ -78,8 +98,14 @@ def compare_values(actualdict, targetdict):
                 relay_dict[i]['state'] = True
             else:
                 relay_dict[i]['state'] = False
-        relay_dict['uv']['state'] = True  
-
+def co2_boost():
+    relay_dict['co2']['state'] = True
+    print("BOOSTING CO2")
+    
+def set_relays_off():
+    for i in relay_dict:
+        relay_dict[i]['state'] = False
+        
 def get_sensor_values(ser):
 #    print("getting sensor vals")
 #    
@@ -150,6 +176,7 @@ def get_targets():
 def repeat_loop(ser):
     print("starting relay loop")
     while True:
+        print(datetime.now())
         
         try:
             #actuals = get_sensor_values()
@@ -158,6 +185,13 @@ def repeat_loop(ser):
             targets = get_targets()
             #print("TARGETS", targets, "ACTUALS",actuals)
             compare_values(actuals['actionable'],targets)
+            ## Shuttoff if fan fail
+            if actuals['other']['airspeed'] < 1:
+                set_relays_off()
+                print("RELAYS OFF DUE TO LOW AIR SPEED")
+            ## Run co2 boost schedule
+            ##schedule.run_all(delay_seconds=0)
+            schedule.run_pending()
             update_relay()
             ## CODE HERE TO UPDATE ACTUALS TABLE
             ## CODE HERE TO UPDATE RELAYS TABLE
@@ -239,14 +273,12 @@ if __name__ == 'run':
                 print(e)
         print("ser established", ser)   
         
-    #    relayprocess = Process(target= repeat_loop)
-    #    relayprocess.daemon = True
-    #    relayprocess.start()
+        # Scheduling temporary co2 control
+        print(datetime.now())
+        schedule.every().day.at("12:16").do(co2_boost)
+        print(schedule.next_run())
+        # Setting up relay and saving threads
         
-    #    savedataprocess = Process(target=save_loop)
-    #    savedataprocess.daemon = True
-    #    savedataprocess.start()
-
         relayprocess = threading.Thread(target=repeat_loop, args=[ser])
         relayprocess.daemon = True
         relayprocess.start()

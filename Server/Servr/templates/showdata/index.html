@@ -5,21 +5,33 @@
 {% endblock %}
 
 {% block content %}
-  <div>
-  {% for params in currentparams %}
-	<h1> Current Set Parameters: </h2>
-  	<h2> Temperature = {{params['temperature']}} °C </h2>
-  	<h2> Rh = {{params['rh']}} % </h2>
-	<h2> CO2 = {{params['co2']}} % </h2>
-{% endfor %}
-  </div>
-  <div>
-    <h1> Current Readings: </h2>
-    <h2> Temperature = {{temperature[-1]}} °C </h2>
-    <h2> Rh = {{rh[-1]}} % </h2>
-    <h2> CO2 = {{co2[-1]}} %</h2>
-    <h2> Airspeed = {{airspeed[-1]}} mph </h2>
-    <h2> O2 = {{o2[-1]}} %</h2>
+  <div id="datacontainer">
+    <div>
+    {% for params in currentparams %}
+	  <h1> Current Set Parameters: </h1>
+	  <h2> Temperature = {{params['temperature']}} °C </h2>
+	  <h2> Rh = {{params['rh']}} % </h2>
+	  <h2> CO2 = {{params['co2']}} % </h2>
+    {% endfor %}
+    </div>
+    <div>
+      <h1> Current Readings: </h2>
+      <h2> Temperature = {{temperature[-1]}} °C </h2>
+      <h2> Rh = {{rh[-1]}} % </h2>
+      <h2> CO2 = {{co2[-1]}} %</h2>
+      {% if airspeed[-1] < 1 %}
+      <h2 class="errorformat"> Airspeed = {{airspeed[-1]}} mph </h2>
+      {% else %}
+      <h2> Airspeed = {{airspeed[-1]}} mph </h2>
+      {% endif %}
+      <h2> O2 = {{o2[-1]}} %</h2>
+    </div>
+    <div>
+      <h1> Relay States: </h2>
+      <h2> Heater = {{heaters[-1]}} </h2>
+      <h2> Humidifier = {{humidifier[-1]}}</h2>
+      <h2> CO2 = {{co2Solenoid[-1]}}</h2>
+    </div>
   </div>
   <h1> Graph Data </h2>
   <form method="post">

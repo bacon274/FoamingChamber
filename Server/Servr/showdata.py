@@ -34,7 +34,7 @@ def index():
         'SELECT temperature, rh, co2 FROM params;').fetchall()
 #    print(querystr)
     df = pd.read_sql_query(querystr, db)
-    
+    df.fillna(0, inplace=True)
    # df2 = pd.read_sql('select CONVERT(datetime, CHAR(10)) as datetime from envdata', db, parse_dates={'datetime': "%Y-%m-%d %H:%M:%S"})
     datetime = df['datetime'].str.normalize('NFKD').str.encode('ASCII').values.tolist() # x axis
     #datetime = ['2021-11-26 16:36:37', '2021-11-26 16:36:42',' 2021-11-26 16:36:47', '2021-11-26 16:36:52','2021-11-26 16:36:57']
@@ -48,4 +48,13 @@ def index():
     airspeed = df['airspeed'].values.tolist()
     
     
-    return render_template('showdata/index.html', start=start, end=end, datetime=datetime, temperature = temperature, rh=rh,co2=co2,o2=o2,airspeed=airspeed,currentparams=currentparams)
+    # Relays
+    relayquerystring = 'SELECT * FROM relaystates;'
+    relaydf= pd.read_sql_query(relayquerystring, db)
+    
+    heaters =  relaydf['temperature'].values.tolist()
+    humidifier = relaydf['rh'].values.tolist()
+    co2Solenoid = relaydf['co2'].values.tolist()
+    print(heaters,humidifier,co2Solenoid)
+    
+    return render_template('showdata/index.html', start=start, end=end, datetime=datetime, temperature = temperature, rh=rh,co2=co2,o2=o2,airspeed=airspeed,currentparams=currentparams, heaters=heaters, humidifier = humidifier, co2Solenoid=co2Solenoid)
