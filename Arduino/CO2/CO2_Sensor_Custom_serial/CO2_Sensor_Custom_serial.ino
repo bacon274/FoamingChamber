@@ -4,7 +4,7 @@ const int tx_pin = 18; //Serial tx pin no
 
 const int buf_len = 9; // Length of buffer
 uint8_t getppm[buf_len] = {0xff, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00,0x79}; // Command buffer to send
-uint8_t setrange[buf_len] = {0xff, 0x01, 0x99, 0x00, 0x00, 0x16, 0xE3, 0x60, 0x0D};
+uint8_t setrange[buf_len] = {0xff, 0x01, 0x99, 0x00, 0x00, 0x00, 0xFF, 0xDC, 0x8B};
 int incomingByte = 0; // for incoming serial data
 int i;
 void setup() {
@@ -45,7 +45,7 @@ void loop() {
       if (response[0] == 0xff && response[1] == 0x86 && checksum(response) == response[8]){
 //        long r2 = (long) response[2];
 //        long 
-        co2 = (long) response[2]*256 + response[3];
+        co2 = (long) response[2]*256L + (long) response[3];
         co2perc = (float) co2/10000;
       }else{
        // Serial.println(checksum(response));
