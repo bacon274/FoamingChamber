@@ -29,7 +29,7 @@ const int analogPinForTMP = A2;
 const float zeroWindAdjustment =  .2; // negative numbers yield smaller wind speeds and vice versa. 
 
 // NEW RH t9602
-const int analogPinForRH = A2;  
+const int analogPinForRH = A0;  
 const int analogPinForTemp = A1; 
 
 
@@ -39,6 +39,7 @@ float RV_Wind_ADunits;    //RV output from wind sensor
 float RV_Wind_Volts; 
 float Temp_ADunits; // T9602 RH and T
 float RH_ADunits; // T9602 RH and T
+float VDD = 5.0; 
 unsigned long lastMillis;
 int TempCtimes100;
 float zeroWind_ADunits;
@@ -72,35 +73,36 @@ void setup() {
 }
 
 void loop(){
-      readT9602()
-//    if (Serial.available() > 0) {
-//      String data = Serial.readStringUntil('\n');
-//      Serial.println(data);
-//      if (data=="GO"){
-//        StaticJsonDocument <200> doc;
-//        doc["other"]["o2"] = readO2Concentration();
-//        doc["actionable"]["rh"] =sht31.getHumidity();
-//        doc["actionable"]["temperature"] = sht31.getTemperature();
-//        doc["other"]["airspeed"] = readAirSpeed();
-//        doc["actionable"]["co2"] = readCo2Concentration();
-//        serializeJson(doc,Serial);
-//        Serial.println();
-//
-//        String lcdString =  "T: " + String(float(doc["actionable"]["temperature"]),1) + "C" 
-//        + " RH:"+ String(float(doc["actionable"]["rh"]),0)+ "%";
-//       
-//        String lcdString2 = "CO2:" + String(float(doc["actionable"]["co2"]),1)+"%" 
-//        + " O2:" + String(float(doc["other"]["o2"]),0) + "%"; 
-//        lcd.clear();
-//        lcd.setCursor(0,0);
-//        lcd.print(lcdString);
-//        lcd.setCursor(0,1);
-//        lcd.print(lcdString2);
-//          
-//         
-//        } else {
-//            Serial.println("Failed to get sensor values.");
-//        }
+      
+
+    if (Serial.available() > 0) {
+      String data = Serial.readStringUntil('\n');
+      Serial.println(data);
+      if (data=="GO"){
+        StaticJsonDocument <200> doc;
+        doc["other"]["o2"] = 0.0;
+        doc["actionable"]["rh"] =readRH_T9602();
+        doc["actionable"]["temperature"] = readT_T9602();
+        doc["other"]["airspeed"] = readAirSpeed();
+        doc["actionable"]["co2"] = readCo2Concentration();
+        serializeJson(doc,Serial);
+        Serial.println();
+
+        String lcdString =  "T: " + String(float(doc["actionable"]["temperature"]),1) + "C" 
+        + " RH:"+ String(float(doc["actionable"]["rh"]),0)+ "%";
+       
+        String lcdString2 = "CO2:" + String(float(doc["actionable"]["co2"]),1)+"%"; 
+        
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print(lcdString);
+        lcd.setCursor(0,1);
+        lcd.print(lcdString2);
+
+        
+        } else {
+            Serial.println("Failed to get sensor values.");
+        }
         
         
       }
@@ -111,17 +113,39 @@ void loop(){
     
     
 }
-float readT9602(){
+
+
+float readRH_T9602(){
+  RH_ADunits = analogRead(analogPinForTemp); // Analog reading between 0-1023 
+  float RH_V = 4.7*(RH_ADunits/1023);
+  float RH_perc = (RH_V*100.0)/4.7; 
+//
+//  Serial.print("RH_AD: ");
+//  Serial.println(RH_ADunits);
+//  Serial.print("RH_V: ");
+//  Serial.println(RH_V);
+//  Serial.print("RH_perc: ");
+//  Serial.println(RH_perc);
+
+
+  return RH_perc;
+
+  }
+float readT_T9602() {
   Temp_ADunits = analogRead(analogPinForRH);
-  RH_ADunits = analogRead(analogPinForTemp);
-  Serial.println(Temp_ADunits);
-  Serial.println(RH_ADunits);
+  float Temp_V = 4.7*(Temp_ADunits/1023);
+  float T_celcius = ((Temp_V/4.7)-0.2424)*165;
   
-
-
-  
-  
+//  Serial.print("T_AD: ");
+//  Serial.println(Temp_ADunits);
+//  Serial.print("T_V: ");
+//  Serial.println(Temp_V);
+//  Serial.print("T_celcius: ");
+//  Serial.println(T_celcius);
+ 
+  return T_celcius;
 }
+
 float readAirSpeed() {
   
    TMP_Therm_ADunits = analogRead(analogPinForTMP);
@@ -198,8 +222,9 @@ float readCo2Concentration(){
 //        Serial.println(response[buf_len-1]);
         co2 = -1;}
     
-//    float co2ppm = response[2]*256 + response[3];
+    float co2ppm = response[2]*256 + response[3];
     co2percent = co2ppm/10000;
+//    Serial.println(co2);
     return co2percent;
   }
 }
@@ -207,9 +232,9 @@ float readCo2Concentration(){
 uint8_t checksum(uint8_t com[]) {
   uint8_t sum = com[1]+com[2]+com[3]+com[4]+com[5]+com[6]+com[7];
   sum = 0xff - sum + 0x01;
-  Serial.print("checksum calc: ");
-  Serial.println(sum);
-  Serial.print("checksum val: ");
-  Serial.println(com[8]);
+//  Serial.print("checksum calc: ");
+//  Serial.println(sum);
+//  Serial.print("checksum val: ");
+//  Serial.println(com[8]);
   return sum;
 }

@@ -164,17 +164,21 @@ float readCo2Concentration(){
     Serial1.flush();
     delay(500);
     while (Serial1.available()<=0){
-//      Serial.print("Buffer available: ");
-//      Serial.println(Serial1.available());
+//      Serial.print("Buffer available: "); // Comment out 
+//      Serial.println(Serial1.available()); // Comment out
       delay(1000);
     }
     while (Serial1.available()> 0){
-//      Serial.print("Buffer available: ");
-//      Serial.println(Serial1.available());
+//      Serial.print("Buffer available: "); // Comment out 
+//      Serial.println(Serial1.available()); // comment out 
       Serial1.readBytes(response,buf_len);
     }
     if (response[0] == 0xff && response[1] == 0x86 && checksum(response) == response[8]){
         co2 = (long) response[2]*256 + response[3];
+//        Serial.print("CO2"); // Comment out 
+//        Serial.println(co2); // commment out
+//        Serial.println(response[2]); // commment out
+//        Serial.println( response[3]);// commment out
       }else{
        // Serial.println(checksum(response));
 //        Serial.print("buffer checksum: ");
@@ -182,7 +186,7 @@ float readCo2Concentration(){
         co2 = -1;}
     
 //    float co2ppm = response[2]*256 + response[3];
-    co2percent = co2ppm/10000;
+    co2percent = (float) co2/10000;
     return co2percent;
   }
 }
@@ -190,9 +194,9 @@ float readCo2Concentration(){
 uint8_t checksum(uint8_t com[]) {
   uint8_t sum = com[1]+com[2]+com[3]+com[4]+com[5]+com[6]+com[7];
   sum = 0xff - sum + 0x01;
-  Serial.print("checksum calc: ");
-  Serial.println(sum);
-  Serial.print("checksum val: ");
-  Serial.println(com[8]);
+//  Serial.print("checksum calc: ");
+//  Serial.println(sum);
+//  Serial.print("checksum val: ");
+//  Serial.println(com[8]);
   return sum;
 }

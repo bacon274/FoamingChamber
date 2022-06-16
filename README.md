@@ -7,7 +7,17 @@
 ## Dependencies:
 ### Raspberry Pi 
 - python3 -m pip install pyserial
-- F
+- Flask 
+- pandas
+- python-dateutil
+- tzlocal
+- gunicorn 
+- systemd
+
 ### Arduino:
 - DHT sensor library 
 - ArduinoJson
+
+
+## To run: 
+### Flask Web server: python -m flask run (in the Server Directory)

@@ -17,16 +17,6 @@ app = create_app()
 
 # Set up RELAY
 def relay_setup():
-    # NOTE, GPIO.HIGH is off
-#    global Relay_Ch1
-#    global Relay_Ch2
-#    global Relay_Ch3
-#    global Relay_Ch4
-#    global Relay_Ch5
-#    global Relay_Ch6
-#    global Relay_Ch7
-#    global Relay_Ch8
-    
     global relay_dict
     
     Relay_Ch1 = 5
@@ -51,11 +41,6 @@ def relay_setup():
     GPIO.output(Relay_Ch2,GPIO.HIGH)
     GPIO.output(Relay_Ch3,GPIO.HIGH)
     
-#    GPIO.output(Relay_Ch2,GPIO.HIGH)
-#    GPIO.output(Relay_Ch3,GPIO.HIGH)
-#    GPIO.output(Relay_Ch4,GPIO.HIGH)
-#    GPIO.output(Relay_Ch1,GPIO.HIGH)
-    
     relay_dict = {'temperature': {'ch': Relay_Ch1,'state':  False}, 'co2' : {'ch': Relay_Ch2,'state':  False}, 'rh' :  {'ch': Relay_Ch3,'state':  False}}
 #    update_relay()
     print("Setup The Relay Module is [success]")
@@ -75,21 +60,6 @@ def update_relay():
                 print("except")
                 GPIO.cleanup()
     
-    print("Updating Relay: ", relay_dict)
-    try:
-        with app.app_context():
-            db = get_db()
-            db.execute("DELETE FROM relaystates;")
-            db.commit()
-            db.execute(
-                "INSERT INTO relaystates (temperature, rh, co2) VALUES (?, ?, ?)",
-                (relay_dict['temperature']['state'], relay_dict['rh']['state'], relay_dict['co2']['state']),
-            )
-            db.commit()
-            print("relay table updated")
-            
-    except:
-        print("couldnt update relay database")
     
 def compare_values(actualdict, targetdict):
 #        print("check:",actualdict, targetdict)
@@ -106,47 +76,23 @@ def set_relays_off():
     for i in relay_dict:
         relay_dict[i]['state'] = False
         
-def get_sensor_values(ser):
-#    print("getting sensor vals")
-#    
-#    try:
-#        print("attempting to get ser")
-#        ser = serial.Serial('/dev/ttyACM1', 9600, write_timeout=1, timeout=1)
-#        
-#    except serial.SerialException:
-#        try:
-#            print("attempting to get ser 2")
-#            ser = serial.Serial('/dev/ttyACM0', 9600 ,write_timeout=1, timeout=1)
-#        except Exception as e:
-#            print(e)
-#    print("ser established")   
+def get_sensor_values(ser):   
     ser.reset_input_buffer()
-#    print("reset ser buffer")
-    
     try:
-#        print("try started")
         ser.write(b"GO\n")
-#        print("serial write")
-        #ser.write("GO")
         time.sleep(1)
-        
         line = ser.readline().decode('utf-8').rstrip()
-#        print(line)
-#        print("serial read")
         if line == "GO" :
             data = ser.readline().decode('utf-8').rstrip()
             sensors_dict = json.loads(data)
         else:
-            sensors_dict = {}
-#        print("try complete")    
-            
+            sensors_dict = {}          
     except Exception as e:
         print("EROOR: data stream")
         print(e)
         sensors_dict = {}
        # sensors_dict = {'actionable':{'temperature': 0, 'co2' : 0, 'rh' : 0}, 'other':{ 'airspeed': 0,'o2':0}}
     
-#    ser.close()
     print("made it through sensor get")
     return sensors_dict
 
@@ -156,16 +102,9 @@ def get_targets():
             db = get_db()
             querystr = 'SELECT temperature, rh, co2 FROM params LIMIT 1;'
             currentparams = db.execute('SELECT temperature, rh, co2 FROM params;').fetchall()
-            #df = pd.read_sql_query(querystr, db)
-            
-           # rh = df['rh'].values.tolist()
-            #temperature = df['temperature'].values.tolist()
-           # co2 = df['co2'].values.tolist()
-            #print(type(currentparams[0]), currentparams, currentparams[0][0]  )
             rh = currentparams[0][1]
             temperature = currentparams[0][0]
             co2 = currentparams[0][2]
-            #print(rh, temperature, co2)
             current_params_dict = {'temperature': temperature, 'rh': rh, 'co2': co2}
             return current_params_dict
     except:
@@ -173,42 +112,66 @@ def get_targets():
             
             
     
-def repeat_loop(ser):
+def repeat_loop(ser): # This function repeats itself every 15 seconds to update relays
     print("starting relay loop")
     while True:
         print(datetime.now())
         
         try:
-            #actuals = get_sensor_values()
             actuals = get_sensor_values(ser) #{'other': {'o2': 19.91613, 'airspeed': 0.588744}, 'actionable': {'temperature': 24.3, 'co2': 0, 'rh': 57}}
-            #print("sensor vals:", actuals)
+            
             targets = get_targets()
             #print("TARGETS", targets, "ACTUALS",actuals)
             compare_values(actuals['actionable'],targets)
             ## Shuttoff if fan fail
-            if actuals['other']['airspeed'] < 1:
+            if actuals['other']['airspeed'] < 6:
                 set_relays_off()
                 print("RELAYS OFF DUE TO LOW AIR SPEED")
             ## Run co2 boost schedule
             ##schedule.run_all(delay_seconds=0)
-            schedule.run_pending()
+#            schedule.run_pending()
             update_relay()
-            ## CODE HERE TO UPDATE ACTUALS TABLE
-            ## CODE HERE TO UPDATE RELAYS TABLE
-            #print("made it through relay loop")
-            time.sleep(10)
+            print("Updating Relay: ", relay_dict)
+            now = datetime.now(get_localzone())
+            datetimestr = now.strftime("%Y-%m-%d %H:%M:%S")
+            rh = actuals["actionable"]["rh"]
+            co2 = actuals['actionable']['co2']
+            o2 = actuals['other']['o2']
+            airspeed = actuals['other']['airspeed']
+            temperature = actuals['actionable']['temperature']
+            temp_relay = relay_dict['temperature']['state']
+            rh_relay = relay_dict['rh']['state']
+            co2_relay = relay_dict['co2']['state']
+            
+            print(rh, co2, o2, airspeed, temperature, temp_relay, rh_relay, co2_relay)
+            
+            
+            try:
+                with app.app_context():
+                    db = get_db()
+                    db.execute("DELETE FROM currentstates;") # 
+                    db.commit()
+                    db.execute(
+                            'INSERT INTO currentstates (datetime, temperature, rh, co2, o2, airspeed,temp_relay, rh_relay, co2_relay) VALUES (?,?,?,?,?,?,?,?,?)',
+                            (datetimestr, temperature, rh, co2, o2,airspeed,temp_relay, rh_relay, co2_relay  ))
+                    db.commit()
+                    print("relay table updated")
+                    
+                              
+            except:
+                print("couldnt update current readings and relays database")
+                ## CODE HERE TO UPDATE ACTUALS TABLE
+                ## CODE HERE TO UPDATE RELAYS TABLE
+                #print("made it through relay loop")
+                time.sleep(10)
         except:
             print("couldnt run relay control")
-#            relay_dict['temperature']['state'] = False
-#            relay_dict['rh']['state'] = False
-#            relay_dict['uv']['state'] = False
-#            relay_dict['co2']['state'] = False
-#            #relaydict = {'temperature': False, 'co2' : False, 'rh' : False, 'uv': False}
-#            update_relay()
-            time.sleep(7)
-            
 
-def save_loop(ser):
+        
+        time.sleep(7)
+                
+
+def save_loop(ser): # This loop runs every 5 mins to log data to graph 
     print("starting save loop")
     while True:
         try:
@@ -224,13 +187,16 @@ def save_loop(ser):
                 o2 = actuals['other']['o2']
                 airspeed = actuals['other']['airspeed']
                 temperature = actuals['actionable']['temperature']
-                print("Saving Data: ", datetimestr,temperature, rh, co2,o2,airspeed)
+                temp_relay = relay_dict['temperature']['state']
+                rh_relay = relay_dict['rh']['state']
+                co2_relay = relay_dict['co2']['state']
+                print("Saving Data: ", datetimestr,temperature, rh, co2,o2,airspeed,temp_relay, rh_relay, co2_relay)
                 db.execute(
-                    'INSERT INTO envdata (datetime, temperature, rh, co2, o2, airspeed) VALUES (?,?,?,?,?,?)', (datetimestr, temperature, rh, co2, o2,airspeed ))
+                    'INSERT INTO envdata (datetime, temperature, rh, co2, o2, airspeed,temp_relay, rh_relay, co2_relay) VALUES (?,?,?,?,?,?,?,?,?)', (datetimestr, temperature, rh, co2, o2,airspeed,temp_relay, rh_relay, co2_relay  ))
                 db.commit()
         except Exception as e:
             print('Error Saving', e)
-        time.sleep(600)
+        time.sleep(300)
         
 def get_histdata():
         try:
@@ -275,8 +241,12 @@ if __name__ == 'run':
         
         # Scheduling temporary co2 control
         print(datetime.now())
-        schedule.every().day.at("12:16").do(co2_boost)
-        print(schedule.next_run())
+#        schedule.every().hour.do(co2_boost)
+#        schedule.every().hour.at(":20").do(co2_boost)
+#        schedule.every().hour.at(":42").do(co2_boost)
+        
+#        schedule.every().day.at("10:00").do(co2_boost)
+#        print(schedule.next_run())
         # Setting up relay and saving threads
         
         relayprocess = threading.Thread(target=repeat_loop, args=[ser])

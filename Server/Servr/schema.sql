@@ -28,11 +28,19 @@ CREATE Table envdata (
 	rh Float, 
 	co2 Float, 
 	o2 Float, 
-	airspeed Float
+	airspeed Float, 
+	temp_relay BOOL, 
+	rh_relay BOOL, 
+	co2_relay BOOL
 );
 
-CREATE Table relaystates (
-	temperature BOOL,
-	rh BOOL,
-	co2 BOOL, 
-	uv BOOL);
+CREATE Table currentstates (
+	datetime TEXT, 
+	temperature FLOAT, 
+	rh Float, 
+	co2 Float, 
+	o2 Float, 
+	airspeed Float, 
+	temp_relay BOOL, 
+	rh_relay BOOL, 
+	co2_relay BOOL);

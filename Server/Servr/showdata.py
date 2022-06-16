@@ -47,14 +47,34 @@ def index():
     co2 = df['co2'].values.tolist()
     airspeed = df['airspeed'].values.tolist()
     
+    heater_list = df['temp_relay'].multiply(100).values.astype(int).tolist()
+    humidifier_list = df['rh_relay'].multiply(100).values.astype(int).tolist()
+    co2Solenoid_list = df['co2_relay'].multiply(100).values.astype(int).tolist()
     
-    # Relays
-    relayquerystring = 'SELECT * FROM relaystates;'
+    
+    # current Data 
+    relayquerystring = 'SELECT * FROM currentstates;'
     relaydf= pd.read_sql_query(relayquerystring, db)
     
-    heaters =  relaydf['temperature'].values.tolist()
-    humidifier = relaydf['rh'].values.tolist()
-    co2Solenoid = relaydf['co2'].values.tolist()
-    print(heaters,humidifier,co2Solenoid)
+    temp_current = relaydf['temperature'].values.tolist()
+    rh_current = relaydf['rh'].values.tolist()
+    co2_current = relaydf['co2'].values.tolist()
+    o2_current = relaydf['o2'].values.tolist()
+    airspeed_current = relaydf['airspeed'].values.tolist()
+    heaters_current =  relaydf['temp_relay'].values.astype(int).tolist()
+    humidifier_current = relaydf['rh_relay'].values.astype(int).tolist()
+    co2Solenoid_current = relaydf['co2_relay'].values.astype(int).tolist()
+    print(heaters_current,humidifier_current,co2Solenoid_current,temp_current, rh_current, co2_current, o2_current)
     
-    return render_template('showdata/index.html', start=start, end=end, datetime=datetime, temperature = temperature, rh=rh,co2=co2,o2=o2,airspeed=airspeed,currentparams=currentparams, heaters=heaters, humidifier = humidifier, co2Solenoid=co2Solenoid)
+    return render_template('showdata/index.html',
+                           start=start, end=end, datetime=datetime,
+                           temperature = temperature, rh=rh,co2=co2,o2=o2,airspeed=airspeed,
+                           
+                           heater_list= heater_list, humidifier_list=humidifier_list,
+                           co2Solenoid_list=co2Solenoid_list,
+                           
+                           currentparams=currentparams,
+                           heaters_current=heaters_current, humidifier_current = humidifier_current,
+                           co2Solenoid_current=co2Solenoid_current,
+                           temp_current=temp_current, rh_current=rh_current, co2_current=co2_current,
+                           o2_current=o2_current, airspeed_current=airspeed_current)

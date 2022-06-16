@@ -16,21 +16,21 @@
     </div>
     <div>
       <h1> Current Readings: </h2>
-      <h2> Temperature = {{temperature[-1]}} °C </h2>
-      <h2> Rh = {{rh[-1]}} % </h2>
-      <h2> CO2 = {{co2[-1]}} %</h2>
-      {% if airspeed[-1] < 1 %}
-      <h2 class="errorformat"> Airspeed = {{airspeed[-1]}} mph </h2>
+      <h2> Temperature = {{temp_current[0]}} °C </h2>
+      <h2> Rh = {{rh_current[0]}} % </h2>
+      <h2> CO2 = {{co2_current[0]}} %</h2>
+      {% if airspeed_current[0] < 6 %}
+      <h2 class="errorformat"> Airspeed = {{airspeed_current[0]}} mph </h2>
       {% else %}
-      <h2> Airspeed = {{airspeed[-1]}} mph </h2>
+      <h2> Airspeed = {{airspeed_current[0]}} mph </h2>
       {% endif %}
-      <h2> O2 = {{o2[-1]}} %</h2>
+      <h2> O2 = {{o2_current[0]}} %</h2>
     </div>
     <div>
       <h1> Relay States: </h2>
-      <h2> Heater = {{heaters[-1]}} </h2>
-      <h2> Humidifier = {{humidifier[-1]}}</h2>
-      <h2> CO2 = {{co2Solenoid[-1]}}</h2>
+      <h2> Heater = {{heaters_current[0]}} </h2>
+      <h2> Humidifier = {{humidifier_current[0]}}</h2>
+      <h2> CO2 = {{co2Solenoid_current[0]}}</h2>
     </div>
   </div>
   <h1> Graph Data </h2>
@@ -56,6 +56,10 @@
 	var co2 = {{co2}};
 	var airspeed = {{airspeed}};
 	var temperature = {{temperature}};
+	var heater_list = {{heater_list}};
+	var humidifier_list= {{humidifier_list}};
+	var co2Solenoid_list = {{co2Solenoid_list}};
+	console.log(co2Solenoid_list[0])
 		
 	var data = {
 		labels: datetime,
@@ -64,6 +68,7 @@
 			{
 				label: "Relative Humidity (%)",
 				fill:false,
+				lineTension: 0,
 				backgroundColor:"#a8d9f7",
 				borderColor: "#3e95cd",
 				data: rh
@@ -71,6 +76,7 @@
 			{
 				label: "Oxygen Concentration (%)",
 				fill:false,
+				lineTension: 0,
 				borderColor: "#f6ab3d",
 				backgroundColor: "#f3edb3",
 				data: o2
@@ -78,6 +84,7 @@
 			{
 				label: "Carbon Dioxide Concentration (%)",
 				fill:false,
+				lineTension: 0,
 				borderColor: "#014d3f",
 				backgroundColor:"#a1cc8a",
 				data: co2
@@ -85,6 +92,7 @@
 			{
 				label: "Airspeed (ms-1)",
 				fill:false,
+				lineTension: 0,
 				borderColor: "#c7cccf",
 				data: airspeed
 			    },
@@ -94,7 +102,34 @@
 				borderColor: "#ff3f00",
 				backgroundColor:"#e37124",
 				data: temperature
-			    }
+			    },
+			{
+				label: "Heater",
+				fill:true,
+				steppedLine: true,
+				pointRadius: 0,
+				borderColor: "rgba(227,113,36,0.5)",
+				backgroundColor:"rgba(227,113,36,0.5)",
+				data: heater_list
+			      }, 
+			{
+				label: "CO2 Valve",
+				fill:true,
+				steppedLine: true,
+				pointRadius: 0,
+				borderColor: "rgba(161,204,138,0.5)",
+				backgroundColor:"rgba(161,204,138,0.5)",
+				data: co2Solenoid_list
+			      }, 
+			{
+				label: "Humidifier",
+				fill:true,
+				steppedLine: true,
+				pointRadius: 0,
+				borderColor: "rgba(168,217,247,0.5)",
+				backgroundColor:"rgba(168,217,247,0.5)",
+				data: humidifier_list
+			      }
 			]
 		    };
 	var options = {

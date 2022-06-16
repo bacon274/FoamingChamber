@@ -153,13 +153,13 @@ float readO2Concentration()
 }
 
 float readCo2Concentration(){
-  if ((millis()-startTime)<0){
-    return -1; 
-  }
-  else{
-    Serial1.write(getppm, buf_len);
-    Serial1.flush();
-    delay(500);
+  uint8_t response[buf_len] = {0, 0, 0, 0, 0, 0, 0,0,0};
+  float co2;
+
+  Serial1.write(getppm, buf_len);
+  Serial1.flush();
+  delay(500);
+  
     while (Serial1.available()<=0){
 //      Serial.print("Buffer available: ");
 //      Serial.println(Serial1.available());
@@ -170,8 +170,10 @@ float readCo2Concentration(){
 //      Serial.println(Serial1.available());
       Serial1.readBytes(response,buf_len);
     }
-    float co2ppm = response[2]*256 + response[3];
-    float co2percent = co2ppm/10000;
+    if (response[0] == 0xff && response[1] == 0x86){
+        co2 = response[2]*256 + response[3];
+    }else{
+        co2 = 99;}
+    float co2percent = co2/10000;
     return co2percent;
-  }
-}
+ }

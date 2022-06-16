@@ -23,11 +23,11 @@ def setparams():
         if float(co2)>15:
             error = 'CO2 limit exceeded (15%)'
             flash(error)
-        if float(temp)>30:
+        if float(temp)>35:
             error = 'Temperature limit exceeded (30C)'
             flash(error)
-        if float(rh)>90:
-            error = 'Relative Humidity limit exceeded (30C)'
+        if float(rh)>99:
+            error = 'Relative Humidity limit exceeded (99%)'
             flash(error)
         if error == None:
             try:

@@ -3,16 +3,16 @@
 // 1. It need about about 5-10 minutes to preheat the sensor
 // 2. modify VRefer if needed
 // 3. Include temperature and humidity sensor library 
-#include <DHT.h>
+//#include <DHT.h>
 #include <ArduinoJson.h>
 #include <LiquidCrystal_I2C.h>
 #include "SHT31.h"
 #include <Arduino.h>
 
 // Define Humidity sensor parameters
-#define DHTTYPE DHT11   // DHT 11
-#define DHTPIN 2     // what pin we're connected to（DHT10 and DHT20 don't need define it）
-DHT dht(DHTPIN, DHTTYPE);
+//#define DHTTYPE DHT11   // DHT 11
+//#define DHTPIN 2     // what pin we're connected to（DHT10 and DHT20 don't need define it）
+//DHT dht(DHTPIN, DHTTYPE);
 
 // New Rh
 
@@ -53,7 +53,7 @@ void setup() {
     Serial.begin(9600);
 //    Serial.println("DHTxx test!");
     Wire.begin(); // initialise  i2c
-    dht.begin();
+    //dht.begin();
     sht31.begin();
     lcd.init();  //initialize the lcd
     lcd.backlight();  //open the backlight
