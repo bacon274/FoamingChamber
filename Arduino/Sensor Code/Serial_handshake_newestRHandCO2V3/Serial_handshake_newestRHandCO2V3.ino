@@ -195,7 +195,7 @@ float readO2Concentration()
 
 float readCo2Concentration(){
   float co2percent;
-  long co2;
+  unsigned long co2;
   
   if ((millis()-startTime)<0){
     return -1; 
@@ -215,14 +215,16 @@ float readCo2Concentration(){
       Serial1.readBytes(response,buf_len);
     }
     if (response[0] == 0xff && response[1] == 0x86 && checksum(response) == response[8]){
-        co2 = (long) response[2]*256 + response[3];
+        co2 = (long) response[2]*256L + (long) response[3];
+        
       }else{
        // Serial.println(checksum(response));
 //        Serial.print("buffer checksum: ");
 //        Serial.println(response[buf_len-1]);
         co2 = -1;}
     
-    float co2ppm = response[2]*256 + response[3];
+    float co2ppm = (long) response[2]*256L + (long) response[3];
+    Serial.print(co2ppm);
     co2percent = co2ppm/10000;
 //    Serial.println(co2);
     return co2percent;
