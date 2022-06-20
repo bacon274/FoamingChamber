@@ -135,7 +135,6 @@ float readT_T9602() {
   Temp_ADunits = analogRead(analogPinForRH);
   float Temp_V = 4.7*(Temp_ADunits/1023);
   float T_celcius = ((Temp_V/4.7)-0.2424)*165;
-  
 //  Serial.print("T_AD: ");
 //  Serial.println(Temp_ADunits);
 //  Serial.print("T_V: ");
@@ -224,7 +223,6 @@ float readCo2Concentration(){
         co2 = -1;}
     
     float co2ppm = (long) response[2]*256L + (long) response[3];
-    Serial.print(co2ppm);
     co2percent = co2ppm/10000;
 //    Serial.println(co2);
     return co2percent;

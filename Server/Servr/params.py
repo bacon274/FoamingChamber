@@ -26,8 +26,8 @@ def setparams():
         if float(temp)>35:
             error = 'Temperature limit exceeded (30C)'
             flash(error)
-        if float(rh)>99:
-            error = 'Relative Humidity limit exceeded (99%)'
+        if float(rh)>100:
+            error = 'Relative Humidity limit exceeded (100%)'
             flash(error)
         if error == None:
             try:

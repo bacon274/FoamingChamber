@@ -71,6 +71,12 @@ def compare_values(actualdict, targetdict):
 def co2_boost():
     relay_dict['co2']['state'] = True
     print("BOOSTING CO2")
+
+def hum_boost():
+    print("BOOSTING HUMIDITY")
+    relay_dict['rh']['state'] = True
+    print("Relay updated")
+    print(relay_dict)
     
 def set_relays_off():
     for i in relay_dict:
@@ -129,7 +135,7 @@ def repeat_loop(ser): # This function repeats itself every 15 seconds to update 
                 print("RELAYS OFF DUE TO LOW AIR SPEED")
             ## Run co2 boost schedule
             ##schedule.run_all(delay_seconds=0)
-#            schedule.run_pending()
+            schedule.run_pending()
             update_relay()
             print("Updating Relay: ", relay_dict)
             now = datetime.now(get_localzone())
@@ -164,6 +170,18 @@ def repeat_loop(ser): # This function repeats itself every 15 seconds to update 
                 ## CODE HERE TO UPDATE RELAYS TABLE
                 #print("made it through relay loop")
                 time.sleep(10)
+            ## if the relay is switched on, updates data on web app
+            if rh_relay == True:
+                print("updating database because RH Relay triggered")
+                try:
+                    with app.app_context():
+                        db = get_db()
+                        print("Saving Data: ", datetimestr,temperature, rh, co2,o2,airspeed,temp_relay, rh_relay, co2_relay)
+                        db.execute(
+                            'INSERT INTO envdata (datetime, temperature, rh, co2, o2, airspeed,temp_relay, rh_relay, co2_relay) VALUES (?,?,?,?,?,?,?,?,?)', (datetimestr, temperature, rh, co2, o2,airspeed,temp_relay, rh_relay, co2_relay  ))
+                        db.commit()
+                except Exception as e:
+                    print('Error Saving', e)
         except:
             print("couldnt run relay control")
 
@@ -238,15 +256,19 @@ if __name__ == 'run':
             except Exception as e:
                 print(e)
         print("ser established", ser)   
-        
+        ### Scheduling boosts
+        ## Humidity
+        ##schedule.every().hour.do(hum_boost)
+        schedule.every().hour.at(":13").do(hum_boost)
         # Scheduling temporary co2 control
         print(datetime.now())
 #        schedule.every().hour.do(co2_boost)
-#        schedule.every().hour.at(":20").do(co2_boost)
+#        schedule.every().hour.at(":04").do(co2_boost)
 #        schedule.every().hour.at(":42").do(co2_boost)
         
 #        schedule.every().day.at("10:00").do(co2_boost)
-#        print(schedule.next_run())
+        print("next hum boost: " )
+        print(schedule.next_run())
         # Setting up relay and saving threads
         
         relayprocess = threading.Thread(target=repeat_loop, args=[ser])
